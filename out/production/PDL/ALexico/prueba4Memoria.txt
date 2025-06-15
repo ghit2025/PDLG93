@@ -1,0 +1,5 @@
+function int FactorialRecursivo (int n)	/* n: parámetro formal de la función entera */
+{
+	if (n > 0)	return 1;
+	return n + FactorialRecursivo (n + 1);	/* llamada recursiva */
+}
