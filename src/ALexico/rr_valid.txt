@@ -1,0 +1,14 @@
+var string s;
+var int a;
+var boolean bb;
+
+function int RR(int n, boolean b, int pp){
+    var boolean log;
+    log = n > 0;
+    if (b) return 1;
+    return RR(n + 1, b, pp);
+}
+
+var int nGlobal;
+var boolean bGlobal;
+var int ppGlobal;

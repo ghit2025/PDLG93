@@ -8,9 +8,14 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) {
+        AnSintactico sintactico = null;
         try {
             // ✅ Configuración de archivos
-            String archivoCodFuente = "src/ALexico/ej4.txt";
+            // Para la demostración generamos la tabla de símbolos utilizando
+            // un ejemplo más completo con varias funciones.
+            // Analizaremos ahora un programa que contiene la función RR
+            // para comprobar que se genera su tabla local correctamente.
+            String archivoCodFuente = "src/ALexico/rr_valid.txt";
             String archivoTokens = "src/ALexico/Tokens.txt";
             String archivoTablaSimbolos = "src/ALexico/TablaSimbolos.txt";
 
@@ -26,7 +31,7 @@ public class Main {
 
             // ✅ Crear analizador sintáctico (que internamente crea el semántico)
             System.out.println("2. Creando analizador sintáctico...");
-            AnSintactico sintactico = new AnSintactico(lexico);
+            sintactico = new AnSintactico(lexico);
 
             // ✅ Ejecutar análisis sintáctico-semántico
             System.out.println("3. Ejecutando análisis sintáctico-semántico...");
@@ -36,10 +41,6 @@ public class Main {
             String parse = sintactico.obtenerParse();
             System.out.println("\n=== RESULTADOS ===");
             System.out.println("Parse generado: " + parse);
-
-            // ✅ CAMBIO: Generar tabla unificada en lugar de cerrar archivos
-            System.out.println("4. Generando tabla de símbolos unificada...");
-            sintactico.generarTablaUnificada();
 
             System.out.println("\n✅ ANÁLISIS COMPLETADO EXITOSAMENTE");
             System.out.println("📄 Archivos generados:");
@@ -71,6 +72,15 @@ public class Main {
             System.err.println("\n❌ ERROR INESPERADO:");
             System.err.println(e.getMessage());
             e.printStackTrace();
+        } finally {
+            if (sintactico != null) {
+                try {
+                    System.out.println("4. Generando tabla de símbolos unificada...");
+                    sintactico.generarTablaUnificada();
+                } catch (Exception ex) {
+                    System.err.println("No se pudo generar la tabla de símbolos: " + ex.getMessage());
+                }
+            }
         }
     }
 
