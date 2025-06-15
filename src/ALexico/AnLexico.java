@@ -11,34 +11,53 @@ import java.util.LinkedHashMap;
 public class AnLexico {
 	private Map<String, String> palReservadas;
 	private Map<String, String> operadores;
-	private Map<String, Map<String, Object>> tablaSimbolos;
+    // Tabla unificada que se usaba originalmente
+    private Map<String, Map<String, Object>> tablaSimbolos;
+    // Tabla global para imprimir en orden de declaración
+    private LinkedHashMap<String, Map<String, Object>> tablaGlobal;
+    // Tablas locales por función, conservan el orden de inserción
+    private LinkedHashMap<String, LinkedHashMap<String, Map<String, Object>>> tablasLocales;
+    private LinkedHashMap<String, Map<String, Object>> tablaLocalActual;
+    private String funcionActual;
+    private boolean esperandoIdFuncion;
+    private int profundidadFuncion;
+    private int contadorGlobal;
+    private int contadorLocal;
 	private String codigoFuente;
 	private int posicionCaracter, linea;
 	private int contadorIds;
 	private BufferedWriter escritorTokens;
 	private BufferedWriter escritorTablaSimbolos;
 
-	public AnLexico(String codigoFuente, String archivoTokens, String archivoTablaSimbolos) {
-		this.codigoFuente = codigoFuente.trim();
-		this.posicionCaracter = 0;
-		this.linea = 1;
-		this.contadorIds = 1;
+        public AnLexico(String codigoFuente, String archivoTokens, String archivoTablaSimbolos) {
+                this.codigoFuente = codigoFuente.trim();
+                this.posicionCaracter = 0;
+                this.linea = 1;
+                this.contadorIds = 1;
+                this.contadorGlobal = 1;
+                this.contadorLocal = 1;
                 tablaSimbolos = new LinkedHashMap<>();
-		guardarPalReservadas();
-		guardarOperadores();
+                tablaGlobal = new LinkedHashMap<>();
+                tablasLocales = new LinkedHashMap<>();
+                tablaLocalActual = null;
+                funcionActual = null;
+                esperandoIdFuncion = false;
+                profundidadFuncion = 0;
+                guardarPalReservadas();
+                guardarOperadores();
 
 		try {
 			this.escritorTokens = new BufferedWriter(new FileWriter(archivoTokens));
 			this.escritorTablaSimbolos = new BufferedWriter(new FileWriter(archivoTablaSimbolos));
 			inicializarTablaSimbolos();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	// En AnLexico.java - añadir este método
-	public Map<String, Map<String, Object>> getTablaSimbolos() {
-		return tablaSimbolos;
-	}
+                } catch (IOException e) {
+                        e.printStackTrace();
+                }
+        }
+        // En AnLexico.java - añadir este método
+        public Map<String, Map<String, Object>> getTablaSimbolos() {
+                return tablaSimbolos;
+        }
 
 	private void guardarPalReservadas() {
 		palReservadas = new HashMap<>();
@@ -113,11 +132,24 @@ public class AnLexico {
 			return new Token("entero", numero.toString());
 		}
 
-		String posibleOperador = Character.toString(caracterActual);
-		if (operadores.containsKey(posibleOperador)) {
-			posicionCaracter++;
-			return new Token(operadores.get(posibleOperador), "");
-		}
+                String posibleOperador = Character.toString(caracterActual);
+                if (operadores.containsKey(posibleOperador)) {
+                        posicionCaracter++;
+                        String codigo = operadores.get(posibleOperador);
+                        if (funcionActual != null) {
+                                if (codigo.equals("cor1")) {
+                                        profundidadFuncion++;
+                                } else if (codigo.equals("cor2")) {
+                                        profundidadFuncion--;
+                                        if (profundidadFuncion == 0) {
+                                                funcionActual = null;
+                                                tablaLocalActual = null;
+                                                contadorLocal = 1;
+                                        }
+                                }
+                        }
+                        return new Token(codigo, "");
+                }
 
 		if (posicionCaracter + 1 < codigoFuente.length()) {
 			String posibleOperadorDoble = codigoFuente.substring(posicionCaracter, posicionCaracter + 2);
@@ -164,15 +196,32 @@ public class AnLexico {
 			String palabraFinal = palabra.toString();
 			Token token;
 
-			if (palReservadas.containsKey(palabraFinal)) {
-				token = new Token(palReservadas.get(palabraFinal), "");
-			} else {
-				if (!tablaSimbolos.containsKey(palabraFinal)) {
-					registrarSimbolo(palabraFinal);
-				}
-				int despl = (int) tablaSimbolos.get(palabraFinal).get("despl");
-				token = new Token("id", String.valueOf(despl));
-			}
+                        if (palReservadas.containsKey(palabraFinal)) {
+                                token = new Token(palReservadas.get(palabraFinal), "");
+                                if (palabraFinal.equals("function")) {
+                                        esperandoIdFuncion = true;
+                                }
+                        } else {
+                                if (esperandoIdFuncion) {
+                                        if (!tablaSimbolos.containsKey(palabraFinal)) {
+                                                registrarSimboloGlobal(palabraFinal);
+                                        }
+                                        funcionActual = palabraFinal;
+                                        tablaLocalActual = new LinkedHashMap<>();
+                                        tablasLocales.put(funcionActual, tablaLocalActual);
+                                        contadorLocal = 1;
+                                        esperandoIdFuncion = false;
+                                } else if (!tablaSimbolos.containsKey(palabraFinal)) {
+                                        if (funcionActual == null) {
+                                                registrarSimboloGlobal(palabraFinal);
+                                        } else {
+                                                registrarSimboloLocal(palabraFinal);
+                                        }
+                                }
+
+                                int despl = (int) tablaSimbolos.get(palabraFinal).get("despl");
+                                token = new Token("id", String.valueOf(despl));
+                        }
 			escribirToken(token);
 			return token;
 		}
@@ -180,17 +229,27 @@ public class AnLexico {
 		throw new RuntimeException("Carácter no reconocido: " + caracterActual + " en la línea " + linea + ".");
 	}
 
-	private void registrarSimbolo(String lexema) {
-		try {
-			Map<String, Object> atributos = new HashMap<>();
-//			atributos.put("tipo", "id");
-			atributos.put("despl", contadorIds++);
-			tablaSimbolos.put(lexema, atributos);
-			actualizarTablaSimbolos();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+	private void registrarSimboloGlobal(String lexema) {
+                Map<String, Object> attrsUnion = new LinkedHashMap<>();
+                attrsUnion.put("despl", contadorIds++);
+                tablaSimbolos.put(lexema, attrsUnion);
+
+                Map<String, Object> attrs = new LinkedHashMap<>();
+                attrs.put("despl", contadorGlobal++);
+                tablaGlobal.put(lexema, attrs);
+        }
+
+        private void registrarSimboloLocal(String lexema) {
+                Map<String, Object> attrsUnion = new LinkedHashMap<>();
+                attrsUnion.put("despl", contadorIds++);
+                tablaSimbolos.put(lexema, attrsUnion);
+
+                Map<String, Object> attrs = new LinkedHashMap<>();
+                attrs.put("despl", contadorLocal++);
+                if (tablaLocalActual != null) {
+                        tablaLocalActual.put(lexema, attrs);
+                }
+        }
 
         private void inicializarTablaSimbolos() throws IOException {
                 escritorTablaSimbolos.write("Tabla Global:\n");
@@ -199,21 +258,23 @@ public class AnLexico {
 
         private void actualizarTablaSimbolos() throws IOException {
                 escritorTablaSimbolos = new BufferedWriter(new FileWriter("src/ALexico/TablaSimbolos.txt"));
+                escribirTablas();
+                escritorTablaSimbolos.flush();
+        }
+
+        private void escribirTablas() throws IOException {
                 escritorTablaSimbolos.write("Tabla Global:\n");
                 escritorTablaSimbolos.write("TABLA DE SIMBOLOS PRINCIPAL #1:\n");
 
-                for (Map.Entry<String, Map<String, Object>> entrada : tablaSimbolos.entrySet()) {
+                for (Map.Entry<String, Map<String, Object>> entrada : tablaGlobal.entrySet()) {
                         String lexema = entrada.getKey();
                         Map<String, Object> atributos = entrada.getValue();
 
-                        // Formato según README
                         escritorTablaSimbolos.write("* LEXEMA: '" + lexema + "'\n");
                         escritorTablaSimbolos.write("Atributos:\n");
-
                         for (Map.Entry<String, Object> atributo : atributos.entrySet()) {
                                 String nombreAtributo = atributo.getKey();
                                 Object valorAtributo = atributo.getValue();
-
                                 if (valorAtributo instanceof String) {
                                         escritorTablaSimbolos.write("+ " + nombreAtributo + ": '" + valorAtributo + "'\n");
                                 } else {
@@ -223,7 +284,30 @@ public class AnLexico {
                         escritorTablaSimbolos.write("-------------------------------------\n");
                 }
 
-                escritorTablaSimbolos.flush();
+                int indice = 2;
+                for (Map.Entry<String, LinkedHashMap<String, Map<String, Object>>> func : tablasLocales.entrySet()) {
+                        String nombre = func.getKey();
+                        LinkedHashMap<String, Map<String, Object>> tabla = func.getValue();
+                        escritorTablaSimbolos.write("Tabla Local para la funcion " + nombre + ":\n");
+                        escritorTablaSimbolos.write("TABLA DE SIMBOLOS FUNCION " + nombre + " #" + indice + ":\n");
+                        for (Map.Entry<String, Map<String, Object>> entrada : tabla.entrySet()) {
+                                String lexema = entrada.getKey();
+                                Map<String, Object> atributos = entrada.getValue();
+                                escritorTablaSimbolos.write("* LEXEMA: '" + lexema + "'\n");
+                                escritorTablaSimbolos.write("Atributos:\n");
+                                for (Map.Entry<String, Object> atributo : atributos.entrySet()) {
+                                        String nombreAtributo = atributo.getKey();
+                                        Object valorAtributo = atributo.getValue();
+                                        if (valorAtributo instanceof String) {
+                                                escritorTablaSimbolos.write("+ " + nombreAtributo + ": '" + valorAtributo + "'\n");
+                                        } else {
+                                                escritorTablaSimbolos.write("+ " + nombreAtributo + ": " + valorAtributo + "\n");
+                                        }
+                                }
+                                escritorTablaSimbolos.write("-------------------------------------\n");
+                        }
+                        indice++;
+                }
         }
 
 	/**
@@ -239,31 +323,8 @@ public class AnLexico {
 
 			// Crear nuevo escritor para regenerar el archivo completo
                         escritorTablaSimbolos = new BufferedWriter(new FileWriter("src/ALexico/TablaSimbolos.txt"));
-                        escritorTablaSimbolos.write("Tabla Global:\n");
-                        escritorTablaSimbolos.write("TABLA DE SIMBOLOS PRINCIPAL #1:\n");
-
-                        // Escribir todas las entradas con información completa
-                        for (Map.Entry<String, Map<String, Object>> entrada : tablaSimbolos.entrySet()) {
-                                String lexema = entrada.getKey();
-                                Map<String, Object> atributos = entrada.getValue();
-
-                                escritorTablaSimbolos.write("* LEXEMA: '" + lexema + "'\n");
-                                escritorTablaSimbolos.write("Atributos:\n");
-
-                                for (Map.Entry<String, Object> atributo : atributos.entrySet()) {
-                                        String nombreAtributo = atributo.getKey();
-                                        Object valorAtributo = atributo.getValue();
-
-                                        if (valorAtributo instanceof String) {
-                                                escritorTablaSimbolos.write("+ " + nombreAtributo + ": '" + valorAtributo + "'\n");
-                                        } else {
-                                                escritorTablaSimbolos.write("+ " + nombreAtributo + ": " + valorAtributo + "\n");
-                                        }
-                                }
-                                escritorTablaSimbolos.write("-------------------------------------\n");
-                        }
-
-			escritorTablaSimbolos.close();
+                        escribirTablas();
+                        escritorTablaSimbolos.close();
 
 		} catch (IOException e) {
 			e.printStackTrace();
