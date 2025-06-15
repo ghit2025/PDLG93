@@ -1,18 +1,44 @@
 package AnSintDesRec;
 
 import ALexico.AnLexico;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.LinkedHashMap;
 
 public class AnSemantico {
     private Map<String, Map<String, Object>> tablaSimbolos; // Referencia a la tabla del léxico
     private AnLexico lexico;
+    // Nuevas estructuras para tablas de símbolos locales
+    private Map<String, LinkedHashMap<String, Map<String, Object>>> tablasLocales;
+    private String funcionActual;
+    private int contadorLocal;
 
     // Constructor que recibe la tabla de símbolos ya creada por el léxico
     public AnSemantico(AnLexico lexico, Map<String, Map<String, Object>> tablaSimbolosExistente) {
         this.lexico = lexico;
         this.tablaSimbolos = tablaSimbolosExistente; // ✅ Usa la tabla existente del léxico
+        this.tablasLocales = new LinkedHashMap<>();
+        this.funcionActual = null;
+        this.contadorLocal = 0;
 
+    }
+
+    // ======== Gestión de tablas locales ========
+    public void iniciarFuncion(String nombreFuncion) {
+        funcionActual = nombreFuncion;
+        contadorLocal = 0;
+        tablasLocales.put(nombreFuncion, new LinkedHashMap<>());
+    }
+
+    public void cerrarFuncion() {
+        funcionActual = null;
+    }
+
+    public Map<String, LinkedHashMap<String, Map<String, Object>>> getTablasLocales() {
+        return tablasLocales;
     }
 
     // ==================== FUNCIONES PRINCIPALES SEGÚN PDF SEMÁNTICO ====================
@@ -110,6 +136,18 @@ public class AnSemantico {
         // Añadir tipo y categoría
         anadeTipoTS(lexema, tipo);
         anadeCategoriaTS(lexema, "variable");
+
+        // Si estamos dentro de una función, guardar en su tabla local
+        if (funcionActual != null) {
+            LinkedHashMap<String, Map<String, Object>> tablaLocal = tablasLocales.get(funcionActual);
+            if (!tablaLocal.containsKey(lexema)) {
+                Map<String, Object> attrs = new LinkedHashMap<>();
+                attrs.put("tipo", tipo);
+                attrs.put("despl", contadorLocal);
+                tablaLocal.put(lexema, attrs);
+                contadorLocal++;
+            }
+        }
     }
 
 
@@ -271,5 +309,58 @@ public class AnSemantico {
 
     public AnLexico getLexico() {
         return lexico;
+    }
+
+    // ======== Generación de la tabla de símbolos completa ========
+    public void generarTablaCompleta() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("src/ALexico/TablaSimbolos.txt"))) {
+            writer.write("Tabla Global:\n");
+            writer.write("TABLA DE SIMBOLOS PRINCIPAL #1:\n");
+
+            for (Map.Entry<String, Map<String, Object>> entrada : tablaSimbolos.entrySet()) {
+                String lexema = entrada.getKey();
+                Map<String, Object> atributos = entrada.getValue();
+
+                writer.write("* LEXEMA: '" + lexema + "'\n");
+                writer.write("Atributos:\n");
+                for (Map.Entry<String, Object> atributo : atributos.entrySet()) {
+                    Object valor = atributo.getValue();
+                    if (valor instanceof String) {
+                        writer.write("+ " + atributo.getKey() + ": '" + valor + "'\n");
+                    } else {
+                        writer.write("+ " + atributo.getKey() + ": " + valor + "\n");
+                    }
+                }
+                writer.write("-------------------------------------\n");
+            }
+
+            int contador = 2;
+            for (Map.Entry<String, LinkedHashMap<String, Map<String, Object>>> func : tablasLocales.entrySet()) {
+                String nombreFunc = func.getKey();
+                LinkedHashMap<String, Map<String, Object>> tablaLocal = func.getValue();
+
+                writer.write("Tabla Local para la función " + nombreFunc + ":\n");
+                writer.write("TABLA DE SIMBOLOS FUNCION " + nombreFunc + " #" + contador + ":\n");
+
+                for (Map.Entry<String, Map<String, Object>> entLoc : tablaLocal.entrySet()) {
+                    writer.write("* LEXEMA: '" + entLoc.getKey() + "'\n");
+                    writer.write("Atributos:\n");
+                    for (Map.Entry<String, Object> atr : entLoc.getValue().entrySet()) {
+                        Object valor = atr.getValue();
+                        if (valor instanceof String) {
+                            writer.write("+ " + atr.getKey() + ": '" + valor + "'\n");
+                        } else {
+                            writer.write("+ " + atr.getKey() + ": " + valor + "\n");
+                        }
+                    }
+                    writer.write("-------------------------------------\n");
+                }
+
+                contador++;
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

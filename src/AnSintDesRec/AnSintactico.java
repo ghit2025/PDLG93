@@ -67,10 +67,10 @@ public class AnSintactico {
 	/**
 	 * Genera la tabla de símbolos unificada al final del análisis
 	 */
-	public void generarTablaUnificada() {
-		// Solicitar al léxico que regenere el archivo con información completa
-		lexico.generarTablaCompleta();
-	}
+        public void generarTablaUnificada() {
+                // Solicitar al semántico que genere la tabla completa (global + locales)
+                semantico.generarTablaCompleta();
+        }
 
 
 
@@ -320,18 +320,20 @@ public class AnSintactico {
 		switch(tokenActual.getCodigo()) {
 			case "function":
 				parse += " 24";
-				equipara("function");
-				String tipoRetorno = H(); // ✅ H devuelve tipo de retorno
-				String lexemaFuncion = obtenerLexemaId(); // ✅ Obtener lexema de la función
-				equipara("id");
-				equipara("par1");
-				int numParametros = A(); // ✅ A debe devolver número de parámetros
-				semantico.validarDeclaracionFuncion(lexemaFuncion, tipoRetorno, numParametros); // ✅ Validación semántica
-				equipara("par2");
-				equipara("cor1");
-				C();
-				equipara("cor2");
-				break;
+                                equipara("function");
+                                String tipoRetorno = H(); // ✅ H devuelve tipo de retorno
+                                String lexemaFuncion = obtenerLexemaId(); // ✅ Obtener lexema de la función
+                                equipara("id");
+                                semantico.iniciarFuncion(lexemaFuncion); // Tabla local
+                                equipara("par1");
+                                int numParametros = A(); // ✅ A devuelve número de parámetros
+                                semantico.validarDeclaracionFuncion(lexemaFuncion, tipoRetorno, numParametros); // ✅ Validación semántica
+                                equipara("par2");
+                                equipara("cor1");
+                                C();
+                                equipara("cor2");
+                                semantico.cerrarFuncion();
+                                break;
 			default:
 				error("Token inesperado en F. Se encontro el token " + tokenActual.getCodigo() + " en la linea " + lexico.getLinea());
 				break;

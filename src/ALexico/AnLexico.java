@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.LinkedHashMap;
 
 public class AnLexico {
 	private Map<String, String> palReservadas;
@@ -22,7 +23,7 @@ public class AnLexico {
 		this.posicionCaracter = 0;
 		this.linea = 1;
 		this.contadorIds = 1;
-		tablaSimbolos = new HashMap<>();
+                tablaSimbolos = new LinkedHashMap<>();
 		guardarPalReservadas();
 		guardarOperadores();
 
@@ -191,36 +192,39 @@ public class AnLexico {
 		}
 	}
 
-	private void inicializarTablaSimbolos() throws IOException {
-		escritorTablaSimbolos.write("TABLA PRINCIPAL #1:\n");
-	}
+        private void inicializarTablaSimbolos() throws IOException {
+                escritorTablaSimbolos.write("Tabla Global:\n");
+                escritorTablaSimbolos.write("TABLA DE SIMBOLOS PRINCIPAL #1:\n");
+        }
 
-	private void actualizarTablaSimbolos() throws IOException {
-		escritorTablaSimbolos = new BufferedWriter(new FileWriter("src/ALexico/TablaSimbolos.txt"));
-		escritorTablaSimbolos.write("TABLA PRINCIPAL #1:\n");
+        private void actualizarTablaSimbolos() throws IOException {
+                escritorTablaSimbolos = new BufferedWriter(new FileWriter("src/ALexico/TablaSimbolos.txt"));
+                escritorTablaSimbolos.write("Tabla Global:\n");
+                escritorTablaSimbolos.write("TABLA DE SIMBOLOS PRINCIPAL #1:\n");
 
-		for (Map.Entry<String, Map<String, Object>> entrada : tablaSimbolos.entrySet()) {
-			String lexema = entrada.getKey();
-			Map<String, Object> atributos = entrada.getValue();
+                for (Map.Entry<String, Map<String, Object>> entrada : tablaSimbolos.entrySet()) {
+                        String lexema = entrada.getKey();
+                        Map<String, Object> atributos = entrada.getValue();
 
-			// ✅ Escribir lexema según formato del PDF
-			escritorTablaSimbolos.write("* LEXEMA : '" + lexema + "'\n");
+                        // Formato según README
+                        escritorTablaSimbolos.write("* LEXEMA: '" + lexema + "'\n");
+                        escritorTablaSimbolos.write("Atributos:\n");
 
-			// ✅ Escribir TODOS los atributos (léxicos + semánticos)
-			for (Map.Entry<String, Object> atributo : atributos.entrySet()) {
-				String nombreAtributo = atributo.getKey();
-				Object valorAtributo = atributo.getValue();
+                        for (Map.Entry<String, Object> atributo : atributos.entrySet()) {
+                                String nombreAtributo = atributo.getKey();
+                                Object valorAtributo = atributo.getValue();
 
-				if (valorAtributo instanceof String) {
-					escritorTablaSimbolos.write("  + " + nombreAtributo + " : '" + valorAtributo + "'\n");
-				} else {
-					escritorTablaSimbolos.write("  + " + nombreAtributo + " : " + valorAtributo + "\n");
-				}
-			}
-		}
+                                if (valorAtributo instanceof String) {
+                                        escritorTablaSimbolos.write("+ " + nombreAtributo + ": '" + valorAtributo + "'\n");
+                                } else {
+                                        escritorTablaSimbolos.write("+ " + nombreAtributo + ": " + valorAtributo + "\n");
+                                }
+                        }
+                        escritorTablaSimbolos.write("-------------------------------------\n");
+                }
 
-		escritorTablaSimbolos.flush();
-	}
+                escritorTablaSimbolos.flush();
+        }
 
 	/**
 	 * Genera la tabla de símbolos completa con información léxica + semántica
@@ -234,29 +238,30 @@ public class AnLexico {
 			}
 
 			// Crear nuevo escritor para regenerar el archivo completo
-			escritorTablaSimbolos = new BufferedWriter(new FileWriter("src/ALexico/TablaSimbolos.txt"));
-			escritorTablaSimbolos.write("TABLA PRINCIPAL #1:\n");
+                        escritorTablaSimbolos = new BufferedWriter(new FileWriter("src/ALexico/TablaSimbolos.txt"));
+                        escritorTablaSimbolos.write("Tabla Global:\n");
+                        escritorTablaSimbolos.write("TABLA DE SIMBOLOS PRINCIPAL #1:\n");
 
-			// Escribir todas las entradas con información completa
-			for (Map.Entry<String, Map<String, Object>> entrada : tablaSimbolos.entrySet()) {
-				String lexema = entrada.getKey();
-				Map<String, Object> atributos = entrada.getValue();
+                        // Escribir todas las entradas con información completa
+                        for (Map.Entry<String, Map<String, Object>> entrada : tablaSimbolos.entrySet()) {
+                                String lexema = entrada.getKey();
+                                Map<String, Object> atributos = entrada.getValue();
 
-				// Escribir lexema según formato del PDF
-				escritorTablaSimbolos.write("* LEXEMA : '" + lexema + "'\n");
+                                escritorTablaSimbolos.write("* LEXEMA: '" + lexema + "'\n");
+                                escritorTablaSimbolos.write("Atributos:\n");
 
-				// Escribir TODOS los atributos (léxicos + semánticos)
-				for (Map.Entry<String, Object> atributo : atributos.entrySet()) {
-					String nombreAtributo = atributo.getKey();
-					Object valorAtributo = atributo.getValue();
+                                for (Map.Entry<String, Object> atributo : atributos.entrySet()) {
+                                        String nombreAtributo = atributo.getKey();
+                                        Object valorAtributo = atributo.getValue();
 
-					if (valorAtributo instanceof String) {
-						escritorTablaSimbolos.write("  + " + nombreAtributo + " : '" + valorAtributo + "'\n");
-					} else {
-						escritorTablaSimbolos.write("  + " + nombreAtributo + " : " + valorAtributo + "\n");
-					}
-				}
-			}
+                                        if (valorAtributo instanceof String) {
+                                                escritorTablaSimbolos.write("+ " + nombreAtributo + ": '" + valorAtributo + "'\n");
+                                        } else {
+                                                escritorTablaSimbolos.write("+ " + nombreAtributo + ": " + valorAtributo + "\n");
+                                        }
+                                }
+                                escritorTablaSimbolos.write("-------------------------------------\n");
+                        }
 
 			escritorTablaSimbolos.close();
 
