@@ -506,11 +506,10 @@ public class AnSintactico {
 		switch(tokenActual.getCodigo()) {
 			case "id":
 				parse += " 41";
-				String lexemaVar = obtenerLexemaId(); // ✅ Obtener lexema
-				String tipoVar = semantico.buscaTipoTS(lexemaVar); // ✅ Buscar tipo en TS
-				equipara("id");
-				V_prime();
-				return tipoVar; // ✅ Devolver tipo de la variable
+                                String lexemaVar = obtenerLexemaId(); // ✅ Obtener lexema
+                                String tipoVar = semantico.buscaTipoTS(lexemaVar); // ✅ Buscar tipo en TS
+                                equipara("id");
+                                return V_prime(lexemaVar, tipoVar); // ✅ Puede cambiar si es llamada a función
 			case "par1":
 				parse += " 42";
 				equipara("par1");
@@ -533,27 +532,32 @@ public class AnSintactico {
 
 	
 	//Funcion V'
-	public void V_prime() {
-		switch(tokenActual.getCodigo()) {
-			case "par1":
-				parse += " 45";//parse.add(45); //Regla V' --> (L)
-				equipara("par1");
-				L();
-				equipara("par2");
-				break;
-			case "mayor":
-			case "suma":
-			case "punCom":
-			case "coma":
-			case "par2":
-			case "asigOL":
-				parse += " 46";//parse.add(46); //Regla V' --> λ
-				break;
-			default:
-				error("Token inesperado en V'. Se encontro el token " + tokenActual.getCodigo() + " en la linea " + lexico.getLinea());
-				break;
-		}
-	}
+        public String V_prime(String lexemaId, String tipoActual) {
+                switch(tokenActual.getCodigo()) {
+                        case "par1":
+                                parse += " 45";//parse.add(45); //Regla V' --> (L)
+                                equipara("par1");
+                                L();
+                                equipara("par2");
+                                String retorno = semantico.obtenerTipoRetorno(lexemaId);
+                                if (retorno == null) {
+                                        throw new RuntimeException("Error semántico: '" + lexemaId +
+                                                "' no es una función en la línea " + lexico.getLinea());
+                                }
+                                return retorno;
+                        case "mayor":
+                        case "suma":
+                        case "punCom":
+                        case "coma":
+                        case "par2":
+                        case "asigOL":
+                                parse += " 46";//parse.add(46); //Regla V' --> λ
+                                return tipoActual;
+                        default:
+                                error("Token inesperado en V'. Se encontro el token " + tokenActual.getCodigo() + " en la linea " + lexico.getLinea());
+                                return "tipo_error";
+                }
+        }
 
 	//Funcion D
 	public void D() {
