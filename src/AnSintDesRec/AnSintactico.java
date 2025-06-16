@@ -337,17 +337,19 @@ public class AnSintactico {
 				equipara("function");
 				String tipoRetorno = H(); //H devuelve tipo de retorno
 				String lexemaFuncion = obtenerLexemaId(); //Obtener lexema de la funcion
-				equipara("id");
-				equipara("par1");
-				int numParametros = A(); //A debe devolver numero de parametros
-				semantico.validarDeclaracionFuncion(lexemaFuncion, tipoRetorno, numParametros,
+                                equipara("id");
+                                lexico.entrarFuncion(lexemaFuncion);
+                                equipara("par1");
+                                int numParametros = A(); //A debe devolver numero de parametros
+                                semantico.validarDeclaracionFuncion(lexemaFuncion, tipoRetorno, numParametros,
                         listaParametros, listaVariablesLocales);
-				//Validacion semantica
-				equipara("par2");
-				equipara("cor1");
-				C();
-				equipara("cor2");
-				break;
+                                //Validacion semantica
+                                equipara("par2");
+                                equipara("cor1");
+                                C();
+                                equipara("cor2");
+                                lexico.salirFuncion();
+                                break;
 			default:
 				error("Token inesperado en F. Se encontro el token " + tokenActual.getCodigo() + " en la linea " + lexico.getLinea());
 				break;

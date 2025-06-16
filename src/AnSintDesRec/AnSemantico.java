@@ -48,8 +48,16 @@ public class AnSemantico {
 					"' no declarada en la linea " + lexico.getLinea());
 		}
 
-		Map<String, Object> atributos = tablaSimbolos.get(lexema);
-		String tipo = (String) atributos.get("tipo");
+                Map<String, Object> atributos = tablaSimbolos.get(lexema);
+
+                String ambito = (String) atributos.get("ambito");
+                if (ambito != null && !"global".equals(ambito)) {
+                        if (!lexico.dentroDeFuncion() || !ambito.equals(lexico.getAmbitoActual())) {
+                                throw new RuntimeException("Error semantico: Variable '" + lexema + "' fuera de su ambito en la linea " + lexico.getLinea());
+                        }
+                }
+
+                String tipo = (String) atributos.get("tipo");
 
 		if (tipo == null) {
 			throw new RuntimeException("Error semantico: Variable '" + lexema +
@@ -109,18 +117,29 @@ public class AnSemantico {
 			}
 		}
 
-		//Insertar tipo y categoria
-		anadeTipoTS(lexema, tipo);
-		anadeCategoriaTS(lexema, "variable");
-	}
+                //Insertar tipo, categoria y ambito
+                anadeTipoTS(lexema, tipo);
+                anadeCategoriaTS(lexema, "variable");
+                anadeAmbitoTS(lexema, lexico.dentroDeFuncion() ? lexico.getAmbitoActual() : "global");
+        }
 
 
 
 	/**
 	 * Valida una asignacion (reglas S_prime -> = E ; S_prime -> |= E ;)
 	 */
-	public void validarAsignacion(String lexema, String tipoExpresion, String operador) {
-		String tipoVariable = buscaTipoTS(lexema);
+        public void validarAsignacion(String lexema, String tipoExpresion, String operador) {
+                Map<String, Object> atributos = tablaSimbolos.get(lexema);
+                if (atributos != null) {
+                        String ambito = (String) atributos.get("ambito");
+                        if (ambito != null && !"global".equals(ambito)) {
+                                if (!lexico.dentroDeFuncion() || !ambito.equals(lexico.getAmbitoActual())) {
+                                        throw new RuntimeException("Error semantico: Variable '" + lexema + "' fuera de su ambito en la linea " + lexico.getLinea());
+                                }
+                        }
+                }
+
+                String tipoVariable = buscaTipoTS(lexema);
 
 		if (operador.equals("|=")) {
 			// Operador |= solo valido para boolean (especificacion de tu grupo)
@@ -173,17 +192,29 @@ public class AnSemantico {
 	/**
 	 * Insertar categoria a un identificador (variable, funcion, etc.)
 	 */
-	public void anadeCategoriaTS(String lexema, String categoria) {
-		if (!tablaSimbolos.containsKey(lexema)) {
-			Map<String, Object> atributos = new HashMap<>();
-			atributos.put("categoria", categoria);
-			tablaSimbolos.put(lexema, atributos);
-		} else {
-			Map<String, Object> atributos = tablaSimbolos.get(lexema);
-			atributos.put("categoria", categoria);
-			tablaSimbolos.put(lexema, atributos);
-		}
-	}
+        public void anadeCategoriaTS(String lexema, String categoria) {
+                if (!tablaSimbolos.containsKey(lexema)) {
+                        Map<String, Object> atributos = new HashMap<>();
+                        atributos.put("categoria", categoria);
+                        tablaSimbolos.put(lexema, atributos);
+                } else {
+                        Map<String, Object> atributos = tablaSimbolos.get(lexema);
+                        atributos.put("categoria", categoria);
+                        tablaSimbolos.put(lexema, atributos);
+                }
+        }
+
+        public void anadeAmbitoTS(String lexema, String ambito) {
+                if (!tablaSimbolos.containsKey(lexema)) {
+                        Map<String, Object> atributos = new HashMap<>();
+                        atributos.put("ambito", ambito);
+                        tablaSimbolos.put(lexema, atributos);
+                } else {
+                        Map<String, Object> atributos = tablaSimbolos.get(lexema);
+                        atributos.put("ambito", ambito);
+                        tablaSimbolos.put(lexema, atributos);
+                }
+        }
 
 	/**
 	 * Insertar informacion de funcion a la tabla de simbolos (regla F -> function H id (A) {C})
@@ -201,8 +232,9 @@ public class AnSemantico {
 			}
 		}
 
-		anadeTipoTS(lexema, "funcion");
-		anadeCategoriaTS(lexema, "funcion");
+                anadeTipoTS(lexema, "funcion");
+                anadeCategoriaTS(lexema, "funcion");
+                anadeAmbitoTS(lexema, "global");
 
 		Map<String, Object> atributos = tablaSimbolos.get(lexema);
 		atributos.put("TipoRetorno", tipoRetorno);
