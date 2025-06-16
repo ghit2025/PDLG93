@@ -513,3 +513,11 @@ identificador '" + id + "' no está declarado. Línea " + linea);
 2. Cómo gestionarlos:
 • Los errores se detectan en tiempo de análisis semántico y detienen la ejecución del
 programa
+
+
+## Comprobaciones semánticas adicionales
+
+Las versiones recientes incluyen dos validaciones clave:
+
+1. **Asignaciones globales**: si se intenta asignar a una variable declarada en el ámbito global fuera de cualquier función, el analizador produce un error semántico.
+2. **Tipo de retorno en llamadas a función**: al evaluar una llamada a función como parte de una expresión, el analizador devuelve el tipo de retorno de dicha función, evitando que se confunda con el tipo "funcion".
