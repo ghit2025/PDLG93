@@ -16,17 +16,21 @@ public class AnLexico {
 	private String codigoFuente;
 	private int posicionCaracter, linea;
 	private int contadorIds;
-	private BufferedWriter escritorTokens;
-	private BufferedWriter escritorTablaSimbolos;
+    private BufferedWriter escritorTokens;
+    private BufferedWriter escritorTablaSimbolos;
+    private boolean dentroDeFuncion;
+    private String ambitoActual;
 
 	public AnLexico(String codigoFuente, String archivoTokens, String archivoTablaSimbolos) {
-		this.codigoFuente = codigoFuente.trim();
-		this.posicionCaracter = 0;
-		this.linea = 1;
-		this.contadorIds = 1;
-		tablaSimbolos = new LinkedHashMap<>();
-		guardarPalReservadas();
-		guardarOperadores();
+                this.codigoFuente = codigoFuente.trim();
+                this.posicionCaracter = 0;
+                this.linea = 1;
+                this.contadorIds = 1;
+                tablaSimbolos = new LinkedHashMap<>();
+                this.dentroDeFuncion = false;
+                this.ambitoActual = "global";
+                guardarPalReservadas();
+                guardarOperadores();
 
 		try {
 			this.escritorTokens = new BufferedWriter(new FileWriter(archivoTokens));
@@ -370,15 +374,35 @@ public class AnLexico {
 		}
 	}
 
-	private void cerrarArchivos() {
-		try {
-			if (escritorTokens != null)
-				escritorTokens.close();
-			//NO cerrar escritorTablaSimbolos aqui
-			//Se cerrara en generarTablaCompleta()
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+        private void cerrarArchivos() {
+                try {
+                        if (escritorTokens != null)
+                                escritorTokens.close();
+                        //NO cerrar escritorTablaSimbolos aqui
+                        //Se cerrara en generarTablaCompleta()
+                } catch (IOException e) {
+                        e.printStackTrace();
+                }
+        }
+
+        // ==================== GESTION DE AMBITOS ====================
+
+        public void entrarFuncion(String nombre) {
+                this.dentroDeFuncion = true;
+                this.ambitoActual = nombre;
+        }
+
+        public void salirFuncion() {
+                this.dentroDeFuncion = false;
+                this.ambitoActual = "global";
+        }
+
+        public boolean dentroDeFuncion() {
+                return dentroDeFuncion;
+        }
+
+        public String getAmbitoActual() {
+                return ambitoActual;
+        }
 
 }
