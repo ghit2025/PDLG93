@@ -118,6 +118,13 @@ public class AnSemantico {
      * Valida una asignación (reglas S' → = E ; y S' → |= E ;)
      */
     public void validarAsignacion(String lexema, String tipoExpresion, String operador) {
+        // No permitir asignaciones a variables globales fuera de una función
+        if (!lexico.dentroDeFuncion() && lexico.esVariableGlobal(lexema)) {
+            throw new RuntimeException(
+                    "Error semántico: No se puede asignar a la variable global '" + lexema +
+                    "' fuera de una función en la línea " + lexico.getLinea());
+        }
+
         String tipoVariable = buscaTipoTS(lexema);
 
         if (operador.equals("|=")) {
@@ -218,6 +225,23 @@ public class AnSemantico {
         Map<String, Object> atributos = tablaSimbolos.get(lexema);
         atributos.put("TipoParam" + String.format("%02d", numeroParam), tipoParam);
         tablaSimbolos.put(lexema, atributos);
+    }
+
+    /**
+     * Obtiene el tipo de retorno de una función
+     */
+    public String obtenerTipoRetorno(String lexema) {
+        if (!tablaSimbolos.containsKey(lexema)) {
+            throw new RuntimeException("Error semántico: Identificador '" + lexema +
+                    "' no declarado en la línea " + lexico.getLinea());
+        }
+
+        Map<String, Object> atributos = tablaSimbolos.get(lexema);
+        String tipo = (String) atributos.get("tipo");
+        if (!"funcion".equals(tipo)) {
+            return null;
+        }
+        return (String) atributos.get("TipoRetorno");
     }
 
     // ==================== FUNCIONES AUXILIARES ====================
