@@ -227,6 +227,23 @@ public class AnSemantico {
         tablaSimbolos.put(lexema, atributos);
     }
 
+    /**
+     * Obtiene el tipo de retorno de una función
+     */
+    public String obtenerTipoRetorno(String lexema) {
+        if (!tablaSimbolos.containsKey(lexema)) {
+            throw new RuntimeException("Error semántico: Identificador '" + lexema +
+                    "' no declarado en la línea " + lexico.getLinea());
+        }
+
+        Map<String, Object> atributos = tablaSimbolos.get(lexema);
+        String tipo = (String) atributos.get("tipo");
+        if (!"funcion".equals(tipo)) {
+            return null;
+        }
+        return (String) atributos.get("TipoRetorno");
+    }
+
     // ==================== FUNCIONES AUXILIARES ====================
 
     /**
