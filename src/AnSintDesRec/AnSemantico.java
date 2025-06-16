@@ -118,6 +118,13 @@ public class AnSemantico {
      * Valida una asignación (reglas S' → = E ; y S' → |= E ;)
      */
     public void validarAsignacion(String lexema, String tipoExpresion, String operador) {
+        // No permitir asignaciones a variables globales fuera de una función
+        if (!lexico.dentroDeFuncion() && lexico.esVariableGlobal(lexema)) {
+            throw new RuntimeException(
+                    "Error semántico: No se puede asignar a la variable global '" + lexema +
+                    "' fuera de una función en la línea " + lexico.getLinea());
+        }
+
         String tipoVariable = buscaTipoTS(lexema);
 
         if (operador.equals("|=")) {

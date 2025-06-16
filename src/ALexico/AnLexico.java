@@ -59,6 +59,16 @@ public class AnLexico {
                 return tablaSimbolos;
         }
 
+        // Indica si actualmente el análisis está dentro de una función
+        public boolean dentroDeFuncion() {
+                return funcionActual != null;
+        }
+
+        // Verifica si un identificador pertenece a la tabla global
+        public boolean esVariableGlobal(String lexema) {
+                return tablaGlobal.containsKey(lexema);
+        }
+
 	private void guardarPalReservadas() {
 		palReservadas = new HashMap<>();
 		palReservadas.put("boolean", "boolean");
