@@ -1,0 +1,5 @@
+var int a;
+a = 3;
+var int b;
+b = 1;
+if(a > b) output "a es mayor";

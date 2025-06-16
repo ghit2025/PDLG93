@@ -1,0 +1,7 @@
+TABLA PRINCIPAL #1:
+* LEXEMA : 's'
+  + tipo : 'string'
+  + categoria : 'variable'
+  + despl : 1
+* LEXEMA : 'a'
+  + despl : 2

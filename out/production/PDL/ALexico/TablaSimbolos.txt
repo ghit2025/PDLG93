@@ -1,0 +1,63 @@
+TABLA PRINCIPAL #1:
+* LEXEMA : 's'
+  + tipo : 'string'
+  + categoria : 'variable'
+  + despl : 1
+* LEXEMA : 'a'
+  + tipo : 'int'
+  + categoria : 'variable'
+  + despl : 2
+* LEXEMA : 'bb'
+  + tipo : 'boolean'
+  + categoria : 'variable'
+  + despl : 3
+* LEXEMA : 'kk'
+  + tipo : 'int'
+  + categoria : 'variable'
+  + despl : 4
+* LEXEMA : 'RR'
+  + tipo : 'funcion'
+  + variables : [{tipo=boolean, lexema=log}, {tipo=string, lexema=S_ss}]
+  + categoria : 'funcion'
+  + numParam : 3
+  + TipoRetorno : 'int'
+  + parametros : [{tipo=int, param=1, lexema=n}, {tipo=int, param=1, lexema=b}, {tipo=int, param=1, lexema=pp}]
+  + despl : 5
+* LEXEMA : 'n'
+  + tipo : 'int'
+  + categoria : 'variable'
+  + despl : 6
+* LEXEMA : 'b'
+  + tipo : 'int'
+  + categoria : 'variable'
+  + despl : 7
+* LEXEMA : 'pp'
+  + tipo : 'int'
+  + categoria : 'variable'
+  + despl : 8
+* LEXEMA : 'log'
+  + tipo : 'boolean'
+  + categoria : 'variable'
+  + despl : 9
+* LEXEMA : 'S_ss'
+  + tipo : 'string'
+  + categoria : 'variable'
+  + despl : 10
+* LEXEMA : 'fun'
+  + tipo : 'funcion'
+  + variables : []
+  + categoria : 'funcion'
+  + numParam : 2
+  + TipoRetorno : 'void'
+  + parametros : [{tipo=string, param=1, lexema=sS}, {tipo=int, param=1, lexema=RS}]
+  + despl : 11
+* LEXEMA : 'sS'
+  + tipo : 'string'
+  + categoria : 'variable'
+  + despl : 12
+* LEXEMA : 'RS'
+  + tipo : 'int'
+  + categoria : 'variable'
+  + despl : 13
+* LEXEMA : 'ss'
+  + despl : 14

@@ -1,0 +1,15 @@
+var int x;
+var int y;
+var int i;
+var int resultado;
+
+output "Introduce el primer número";
+input x;
+output "Introduce el segundo número";
+input y;
+if (x > y) resultado = X + 2;
+resultado = x + y;
+for (i = 0; i > resultado; i = i + 1) {
+}
+output "El resultado final es";
+output resultado;
