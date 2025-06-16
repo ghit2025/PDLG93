@@ -64,6 +64,11 @@ public class AnLexico {
                 return funcionActual != null;
         }
 
+        // Devuelve el nombre de la función actual o null si estamos en el ámbito global
+        public String getFuncionActual() {
+                return funcionActual;
+        }
+
         // Verifica si un identificador pertenece a la tabla global
         public boolean esVariableGlobal(String lexema) {
                 return tablaGlobal.containsKey(lexema);
@@ -239,23 +244,27 @@ public class AnLexico {
 		throw new RuntimeException("Carácter no reconocido: " + caracterActual + " en la línea " + linea + ".");
 	}
 
-	private void registrarSimboloGlobal(String lexema) {
+        private void registrarSimboloGlobal(String lexema) {
                 Map<String, Object> attrsUnion = new LinkedHashMap<>();
                 attrsUnion.put("despl", contadorIds++);
+                attrsUnion.put("ambito", "global");
                 tablaSimbolos.put(lexema, attrsUnion);
 
                 Map<String, Object> attrs = new LinkedHashMap<>();
                 attrs.put("despl", contadorGlobal++);
+                attrs.put("ambito", "global");
                 tablaGlobal.put(lexema, attrs);
         }
 
         private void registrarSimboloLocal(String lexema) {
                 Map<String, Object> attrsUnion = new LinkedHashMap<>();
                 attrsUnion.put("despl", contadorIds++);
+                attrsUnion.put("ambito", funcionActual);
                 tablaSimbolos.put(lexema, attrsUnion);
 
                 Map<String, Object> attrs = new LinkedHashMap<>();
                 attrs.put("despl", contadorLocal++);
+                attrs.put("ambito", funcionActual);
                 if (tablaLocalActual != null) {
                         tablaLocalActual.put(lexema, attrs);
                 }

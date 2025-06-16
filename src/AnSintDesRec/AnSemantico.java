@@ -47,6 +47,17 @@ public class AnSemantico {
         }
 
         Map<String, Object> atributos = tablaSimbolos.get(lexema);
+
+        // Comprobar que el identificador está accesible en el ámbito actual
+        String ambito = (String) atributos.get("ambito");
+        if (ambito != null && !"global".equals(ambito)) {
+            // Es una variable local, debe coincidir la función actual
+            if (!lexico.dentroDeFuncion() || !ambito.equals(lexico.getFuncionActual())) {
+                throw new RuntimeException(
+                        "Error semántico: Variable '" + lexema + "' fuera de su ámbito en la línea " + lexico.getLinea());
+            }
+        }
+
         String tipo = (String) atributos.get("tipo");
 
         if (tipo == null) {
@@ -123,6 +134,18 @@ public class AnSemantico {
             throw new RuntimeException(
                     "Error semántico: No se puede asignar a la variable global '" + lexema +
                     "' fuera de una función en la línea " + lexico.getLinea());
+        }
+
+        // Verificar que la variable esté accesible en el ámbito actual
+        if (tablaSimbolos.containsKey(lexema)) {
+            Map<String, Object> atributos = tablaSimbolos.get(lexema);
+            String ambito = (String) atributos.get("ambito");
+            if (ambito != null && !"global".equals(ambito)) {
+                if (!lexico.dentroDeFuncion() || !ambito.equals(lexico.getFuncionActual())) {
+                    throw new RuntimeException(
+                            "Error semántico: Variable '" + lexema + "' fuera de su ámbito en la línea " + lexico.getLinea());
+                }
+            }
         }
 
         String tipoVariable = buscaTipoTS(lexema);
