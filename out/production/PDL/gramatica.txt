@@ -1,0 +1,56 @@
+Terminales = { if var int boolean string for output input return function void id entero cadena ; , ( ) { } = |= ! + > }
+
+NoTerminales = { P B T S S_prime L Q X F H A K C E E_prime R R_prime U V V_prime D D_prime }
+
+Axioma = P
+
+Producciones = {
+	P -> B P
+	P -> F P
+	P -> lambda
+	B -> if ( E ) S
+	B -> var T id ;
+	B -> for ( S E ; D ) { C }
+	B -> S
+	T -> int
+	T -> boolean
+	T -> string
+	S -> id S_prime
+	S -> output E ;
+	S -> input id ;
+	S -> return X ;
+	S_prime -> = E ;
+	S_prime -> |= E ;
+	S_prime -> ( L ) ;
+	L -> E Q
+	L -> lambda
+	Q -> , E Q
+	Q -> lambda
+	X -> E
+	X -> lambda
+	F -> function H id ( A ) { C }
+	H -> T
+	H -> void
+	A -> T id K
+	A -> void
+	K -> , T id K
+	K -> lambda
+	C -> B C
+	C -> lambda
+	E -> R E_prime
+	E_prime -> > R E_prime
+	E_prime -> lambda
+	R -> U R_prime
+	R_prime -> + U R_prime
+	R_prime -> lambda
+	U -> ! U
+	U -> V
+	V -> id V_prime
+	V -> ( E )
+	V -> entero
+	V -> cadena
+	V_prime -> ( L )
+	V_prime -> lambda
+	D -> id D_prime
+	D_prime -> = E
+}

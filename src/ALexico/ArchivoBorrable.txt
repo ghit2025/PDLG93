@@ -1,0 +1,58 @@
+//** No se debe cambiar el ejemplo hasta que lo indique el profesor **/
+var  boolean bb ;
+var string s ;
+var int a ;
+
+var boolean log;
+a= a + 88 + 3;
+
+function int RR (int n, boolean b)	
+{
+	var  boolean log1;
+	log= n > a;
+	//> 5;
+	var int kk;
+	input kk;
+	if (! log)	return log;
+	return n + RR (n + 1, bb);	
+}
+
+var string  s_s_;
+
+a = 1;
+
+function int prueba(int xx){
+    var boolean log1;
+    return xx;
+}
+function void traza(string s1, int RS=prueba(a), string pp)	
+{
+	//RS = prueba(a);
+	input s;
+	var boolean s_;
+	output"hola";
+	output a;
+	output RR;	input s;
+	if (bb)return ;
+	output (4 + a + (0032765 + (8 + 3)));
+}
+var int ks;
+ks=888;
+s_s_ = "++++++Hellooooooooooooooooooooooooooooooooooooooooo";
+
+function string cadena (void)
+{
+	//var string kk ;
+		var		string xx;
+		xx=s_s_;
+		if(bb) 
+			return s_s_;
+		return "";
+}	//Si no esta tampoco salta...	
+// fin function */
+	var int r;
+	//s= cadena(kk);
+	a= RR (5, bb);
+	//kk = put (kk,99,s_);
+	//return s;
+

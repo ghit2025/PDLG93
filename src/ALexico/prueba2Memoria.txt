@@ -1,0 +1,8 @@
+var int a;
+var int b;
+input a;
+input b;
+function int sumar(int num1, int num2){
+	return num1 + num2;
+}
+var int x;

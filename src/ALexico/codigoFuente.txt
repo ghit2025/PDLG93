@@ -1,0 +1,13 @@
+var int x;
+var string mensaje;
+
+function int suma(int a, int b) {
+    var int resultado;
+    resultado = a + b;
+    return resultado;
+}
+var int y;
+function void imprimirMensaje(string msg) {
+    output msg;
+}
+
